@@ -17,6 +17,19 @@ export function SearchFilters({
   const [deviceIp, setDeviceIp] = useState<string>("");
   const [scannerId, setScannerId] = useState<string>("");
 
+  const resetFilters = () => {
+    setDeviceId("");
+    setDeviceIp("");
+    setScannerId("");
+    // change the target value of the actual input element
+    (document.getElementById("device_id") as HTMLInputElement).value = "";
+    (document.getElementById("device_ip") as HTMLInputElement).value = "";
+    (document.getElementById("scanner_id") as HTMLInputElement).value = "";
+
+    // reset the devices to the default devices
+    deviceStore.setDevices(devices);
+  };
+
   const onSubmit = useDebouncedCallback(
     ({
       deviceId,
@@ -32,7 +45,6 @@ export function SearchFilters({
       // call this only if the the deviceId is not empty string
       const filteredDevices = [];
       if (deviceId === "" && deviceIp === "" && scannerId === "") {
-        console.log("defaultDevices", devices);
         deviceStore.setDevices(devices);
         return;
       }
@@ -76,6 +88,7 @@ export function SearchFilters({
       }}
     >
       <Input
+        id="device_id"
         placeholder="Device ID"
         onChange={(e) => {
           setDeviceId(e.target.value.trim());
@@ -83,6 +96,7 @@ export function SearchFilters({
         }}
       />
       <Input
+        id="device_ip"
         placeholder="Device IP"
         onChange={(e) => {
           setDeviceIp(e.target.value.trim());
@@ -90,6 +104,7 @@ export function SearchFilters({
         }}
       />
       <Input
+        id="scanner_id"
         placeholder="Scanner ID"
         onChange={(e) => {
           setScannerId(e.target.value.trim());
@@ -97,11 +112,7 @@ export function SearchFilters({
         }}
       />
       <Button type="submit">Search</Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => onSubmit({ deviceId: "", deviceIp: "", scannerId: "" })}
-      >
+      <Button type="button" variant="outline" onClick={() => resetFilters()}>
         Reset
       </Button>
     </form>

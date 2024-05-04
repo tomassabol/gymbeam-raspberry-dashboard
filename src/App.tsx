@@ -11,6 +11,9 @@ const SOCKET_URL =
 
 export default function App() {
   const devicesStore = useDeviceStore();
+  const [defaultDevices, setDefaultDevices] = useState<Device[]>(
+    devicesStore.devices
+  );
   const [devices, setDevices] = useState<Device[]>(devicesStore.devices);
 
   const { sendJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
@@ -41,6 +44,7 @@ export default function App() {
     const devicesSet = Array.from(new Set(devices));
     devicesStore.setDevices(devicesSet);
     setDevices(devicesSet);
+    setDefaultDevices(devicesSet);
   }
 
   function updateDevice(updatedDevice: Device) {
@@ -59,10 +63,10 @@ export default function App() {
   return (
     <main className="p-8 flex flex-col gap-4">
       <h1 className="text-2xl font-bold">GymBeam - Raspberry dashboard</h1>
-      {devices.length > 0 && <SearchFilters defaultDevices={devices} />}
+      {defaultDevices.length > 0 && <SearchFilters defaultDevices={devices} />}
       <p className="text-sm">Number of devices: {devices.length}</p>
 
-      {readyStateString === "OPEN" && devices.length > 0 ? (
+      {readyStateString === "OPEN" && defaultDevices.length > 0 ? (
         <DeviceTable devices={devices} />
       ) : (
         <DeviceTableLoader />

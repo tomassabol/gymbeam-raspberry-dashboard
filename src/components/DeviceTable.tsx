@@ -34,7 +34,7 @@ export function DeviceTable({ devices }: { devices: Device[] }) {
             {devices.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={14}
                   className="text-center h-32 text-muted-foreground"
                 >
                   No devices found
