@@ -8,6 +8,8 @@ import {
   TableRow,
 } from "./ui/table";
 import { DeviceStatus } from "./DeviceStatus";
+import CopyToClipboard from "./util/CopyToClipboard";
+import NullOrUndefined from "./util/NullOrUndefined";
 
 export function DeviceTable({ devices }: { devices: Device[] }) {
   return (
@@ -44,23 +46,57 @@ export function DeviceTable({ devices }: { devices: Device[] }) {
             {devices.map((device) => (
               <TableRow key={crypto.randomUUID()}>
                 <TableCell className="font-semibold">
-                  {device.device_id}
+                  <CopyToClipboard text={device.device_id}>
+                    {device.device_id}
+                  </CopyToClipboard>
                 </TableCell>
-                <TableCell>{device.device_type}</TableCell>
-                <TableCell>{device.scanner_id}</TableCell>
                 <TableCell>
-                  <DeviceStatus status={device.alive} />
+                  <CopyToClipboard text={device.device_type}>
+                    {device.device_type}
+                  </CopyToClipboard>
                 </TableCell>
-                <TableCell>{device.ip}</TableCell>
-                <TableCell>{device.cpu_usage}</TableCell>
-                <TableCell>{device.disk_usage}</TableCell>
-                <TableCell>{device.core_temp}</TableCell>
-                <TableCell>{device.cpu_freq}</TableCell>
-                <TableCell>{device.disk_read_time}</TableCell>
-                <TableCell>{device.disk_write_time}</TableCell>
-                <TableCell>{device.network_sent}</TableCell>
-                <TableCell>{device.network_recv}</TableCell>
-                <TableCell>{device.version}</TableCell>
+                <TableCell>
+                  {device.scanner_id ? (
+                    <CopyToClipboard text={device.scanner_id.toString()}>
+                      {device.scanner_id}
+                    </CopyToClipboard>
+                  ) : (
+                    <NullOrUndefined />
+                  )}
+                </TableCell>
+                <TableCell>
+                  {device.alive === undefined ? (
+                    <NullOrUndefined />
+                  ) : (
+                    <DeviceStatus status={device.alive} />
+                  )}
+                </TableCell>
+                <TableCell>
+                  {device.ip?.split(" ").map((ip) => (
+                    <CopyToClipboard key={crypto.randomUUID()} text={ip}>
+                      {ip}
+                    </CopyToClipboard>
+                  )) ?? <NullOrUndefined />}
+                </TableCell>
+                <TableCell>{device.cpu_usage ?? <NullOrUndefined />}</TableCell>
+                <TableCell>
+                  {device.disk_usage ?? <NullOrUndefined />}
+                </TableCell>
+                <TableCell>{device.core_temp ?? <NullOrUndefined />}</TableCell>
+                <TableCell>{device.cpu_freq ?? <NullOrUndefined />}</TableCell>
+                <TableCell>
+                  {device.disk_read_time ?? <NullOrUndefined />}
+                </TableCell>
+                <TableCell>
+                  {device.disk_write_time ?? <NullOrUndefined />}
+                </TableCell>
+                <TableCell>
+                  {device.network_sent ?? <NullOrUndefined />}
+                </TableCell>
+                <TableCell>
+                  {device.network_recv ?? <NullOrUndefined />}
+                </TableCell>
+                <TableCell>{device.version ?? <NullOrUndefined />}</TableCell>
               </TableRow>
             ))}
           </TableBody>

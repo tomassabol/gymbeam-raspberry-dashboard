@@ -77,7 +77,7 @@ export function SearchFilters({
 
   return (
     <form
-      className="flex gap-2"
+      className="flex md:flex-row flex-col gap-2"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit({

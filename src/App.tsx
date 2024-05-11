@@ -6,8 +6,7 @@ import { useDeviceStore } from "./stores/useDeviceStore";
 import useWebSocket from "react-use-websocket";
 import { DeviceTableLoader } from "./components/loaders/DeviceTableLoader";
 
-const SOCKET_URL =
-  "wss://a8podsjqza.execute-api.eu-central-1.amazonaws.com/production";
+const SOCKET_URL = import.meta.env.VITE_WS_URL!;
 
 export default function App() {
   const devicesStore = useDeviceStore();
@@ -23,12 +22,16 @@ export default function App() {
     onMessage: (event) => {
       const fetchedDevices = JSON.parse(event.data) as Device[];
       if (!Array.isArray(fetchedDevices)) {
-        // console.log("Device", fetchedDevices);
-        updateDevice(fetchedDevices);
+        console.log("Device");
         return;
       }
+      console.log("Devices");
       upsertDevices(fetchedDevices);
       return;
+    },
+    filter: (message) => {
+      const parsedMessage = JSON.parse(message.data);
+      return Array.isArray(parsedMessage);
     },
   });
 
@@ -47,15 +50,6 @@ export default function App() {
     setDefaultDevices(devicesSet);
   }
 
-  function updateDevice(updatedDevice: Device) {
-    const newDevices = devices.map((device) => {
-      if (device.device_id === updatedDevice.device_id) return updatedDevice;
-      return device;
-    });
-    devicesStore.setDevices(newDevices);
-    setDevices(newDevices);
-  }
-
   useEffect(() => {
     setDevices(devicesStore.devices);
   }, [devicesStore.devices]);
@@ -66,11 +60,21 @@ export default function App() {
       {defaultDevices.length > 0 && <SearchFilters defaultDevices={devices} />}
       <p className="text-sm">Number of devices: {devices.length}</p>
 
-      {readyStateString === "OPEN" && defaultDevices.length > 0 ? (
-        <DeviceTable devices={devices} />
-      ) : (
-        <DeviceTableLoader />
-      )}
+      <DeviceTableComponent devices={devices} state={readyStateString} />
     </main>
+  );
+}
+
+function DeviceTableComponent({
+  devices,
+  state,
+}: {
+  devices: Device[];
+  state: string | undefined;
+}) {
+  return state === "OPEN" && devices.length > 0 ? (
+    <DeviceTable devices={devices} />
+  ) : (
+    <DeviceTableLoader />
   );
 }
