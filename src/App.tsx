@@ -5,6 +5,7 @@ import type { Device } from "./types/types";
 import { useDeviceStore } from "./stores/useDeviceStore";
 import useWebSocket from "react-use-websocket";
 import { DeviceTableLoader } from "./components/loaders/DeviceTableLoader";
+import { UpdateAlertContainer } from "./components/UpdateAlertContainer";
 
 const SOCKET_URL = import.meta.env.VITE_WS_URL!;
 
@@ -15,14 +16,17 @@ export default function App() {
   );
   const [devices, setDevices] = useState<Device[]>(devicesStore.devices);
 
+  const [updatedAt, setUpdatedAt] = useState<Date | undefined>(undefined);
+  const [isLive, setIsLive] = useState(false);
+
   const { sendJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
     share: true,
     shouldReconnect: () => false,
     onOpen: () => sendJsonMessage({ action: "ping", data: "gui" }),
     onMessage: (event) => {
-      const fetchedDevices = JSON.parse(event.data) as Device[];
+      const fetchedDevices = JSON.parse(event.data) as Device | Device[];
       if (!Array.isArray(fetchedDevices)) {
-        console.log("Device");
+        if (isLive) updateDevice(fetchedDevices);
         return;
       }
       console.log("Devices");
@@ -31,7 +35,8 @@ export default function App() {
     },
     filter: (message) => {
       const parsedMessage = JSON.parse(message.data);
-      return Array.isArray(parsedMessage);
+      if (isLive) return true;
+      else return Array.isArray(parsedMessage);
     },
   });
 
@@ -48,6 +53,17 @@ export default function App() {
     devicesStore.setDevices(devicesSet);
     setDevices(devicesSet);
     setDefaultDevices(devicesSet);
+    setUpdatedAt(new Date());
+  }
+
+  function updateDevice(updatedDevice: Device) {
+    const newDevices = devices.map((device) => {
+      if (device.device_id === updatedDevice.device_id) return updatedDevice;
+      return device;
+    });
+    devicesStore.setDevices(newDevices);
+    setDevices(newDevices);
+    setUpdatedAt(new Date());
   }
 
   useEffect(() => {
@@ -56,23 +72,35 @@ export default function App() {
 
   return (
     <main className="p-8 flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">GymBeam - Raspberry dashboard</h1>
+      <div className="flex flex-col md:flex-row md:justify-between gap-2">
+        <h1 className="text-2xl font-bold">GymBeam - Raspberry dashboard</h1>
+        {/* @ts-expect-error */}
+        <UpdateAlertContainer
+          setIsLive={setIsLive}
+          live={isLive}
+          updatedAt={updatedAt!}
+        />
+      </div>
       {defaultDevices.length > 0 && <SearchFilters defaultDevices={devices} />}
-      <p className="text-sm">Number of devices: {devices.length}</p>
 
-      <DeviceTableComponent devices={devices} state={readyStateString} />
+      <DeviceTableComponent
+        defaultDevices={defaultDevices}
+        devices={devices}
+        state={readyStateString}
+      />
     </main>
   );
 }
 
 function DeviceTableComponent({
+  defaultDevices,
   devices,
-  state,
 }: {
+  defaultDevices: Device[];
   devices: Device[];
   state: string | undefined;
 }) {
-  return state === "OPEN" && devices.length > 0 ? (
+  return defaultDevices.length > 0 ? (
     <DeviceTable devices={devices} />
   ) : (
     <DeviceTableLoader />
