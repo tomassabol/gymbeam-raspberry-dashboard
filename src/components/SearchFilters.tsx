@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useDebouncedCallback } from "use-debounce";
-import { useDeviceStore } from "@/stores/useDeviceStore";
 import type { Device } from "@/types/types";
 
 export function SearchFilters({
@@ -10,9 +9,6 @@ export function SearchFilters({
 }: {
   defaultDevices: Device[];
 }) {
-  const deviceStore = useDeviceStore();
-  const [devices] = useState<Device[]>(defaultDevices);
-
   const [deviceId, setDeviceId] = useState<string>("");
   const [deviceIp, setDeviceIp] = useState<string>("");
   const [scannerId, setScannerId] = useState<string>("");
@@ -25,9 +21,6 @@ export function SearchFilters({
     (document.getElementById("device_id") as HTMLInputElement).value = "";
     (document.getElementById("device_ip") as HTMLInputElement).value = "";
     (document.getElementById("scanner_id") as HTMLInputElement).value = "";
-
-    // reset the devices to the default devices
-    deviceStore.setDevices(devices);
   };
 
   const onSubmit = useDebouncedCallback(
@@ -45,7 +38,6 @@ export function SearchFilters({
       // call this only if the the deviceId is not empty string
       const filteredDevices = [];
       if (deviceId === "" && deviceIp === "" && scannerId === "") {
-        deviceStore.setDevices(devices);
         return;
       }
       if (deviceId !== "") {
@@ -69,7 +61,6 @@ export function SearchFilters({
       }
 
       const devicesSet = new Set(filteredDevices);
-      deviceStore.setDevices(Array.from(devicesSet));
       console.log("filtered", Array.from(devicesSet));
     },
     300
